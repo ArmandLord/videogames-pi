@@ -32,9 +32,13 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    urlImage: {
-      type: DataTypes.STRING,
-      allowNull: true
+    image: {
+      type: DataTypes.STRING
+    },
+    createdInDb: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true
     } 
   });
 };

@@ -6,6 +6,8 @@ const { API_KEY } = process.env
 // Importar todos los routers;
 // Ejemplo: const authRouter = require('./auth.js');
 const { Videogame, Genre } = require('../db');
+const db = require('../db');
+
 
 
 const router = Router();
@@ -25,7 +27,7 @@ const getApiInfo = async () => {
     
     let totalGames = apiURL.data.results.concat(apiURL2.data.results, apiURL3.data.results, apiURL4.data.results, apiURL5.data.results)
    
-
+    // console.log(totalGames.length);
     const apiInfo = await totalGames.map(el => { 
         return {
             // aux: aux++,
@@ -46,7 +48,7 @@ const getDbInfo = async () => {
     return await Videogame.findAll({
         include: {
             model: Genre,
-            attributes: ['name'],
+            attributes: ['nameGenre'],
             through: {
                 attributes: []
             },  
@@ -54,13 +56,68 @@ const getDbInfo = async () => {
     })
 }
 
-//Concatenar ambos
+const getVgNameApi = async (game) => {
+    const apiUrlName = await axios.get(`https://api.rawg.io/api/games?search=${game}&key=${API_KEY}`)    
+    let vName = await apiUrlName.data.results.map(el => { 
+        return {
+            // aux: aux++,
+            id: el.id,
+            name: el.name,
+            released: el.released,
+            image: el.background_image,
+            rating: el.rating,
+            platforms: el.platforms.map(el => el.platform.name),
+            genres: el.genres.map(el => el.name)
+        }
+    })
+    return vName.slice(0, 15) //solo 15
+}
+const getNamedGames = async (name) => {
+    const apiSearch = await getVgNameApi(name);
+    const dbInfo = await getDbInfo();
+    const auxArr = await dbInfo.map(el => {
+        return {
+            id: el.dataValues.id,
+            name: el.dataValues.name,
+            description: el.dataValues.description,
+            releaseDate: el.dataValues.releaseDate,
+            rating: el.dataValues.rating,
+            platforms: el.dataValues.platforms,
+            image: el.dataValues.image,
+            genres: el.dataValues.genres.map(el => el.nameGenre),
+            createdInDb: el.dataValues.createdInDb
+        }
+    })
+    // console.log(apiSearch);
+    // console.log(auxArr);
+    const allInfo = apiSearch.concat(auxArr);
+    return allInfo;
+}
+
+
+//Concatenar ambos // el bueno
 const getAllVideogames = async () => {
     const apiInfo = await getApiInfo()
     const dbInfo = await getDbInfo()
-    const totalInfo = apiInfo.concat(dbInfo)   
+    //hacer el map 👆🏻
+    // console.log(dbInfo[0].dataValues);
+    const arr = await dbInfo.map(el => {
+        return {
+            id: el.dataValues.id,
+            name: el.dataValues.name,
+            description: el.dataValues.description,
+            releaseDate: el.dataValues.releaseDate,
+            rating: el.dataValues.rating,
+            platforms: el.dataValues.platforms,
+            image: el.dataValues.image,
+            genres: el.dataValues.genres.map(el => el.nameGenre),
+            createdInDb: el.dataValues.createdInDb
+        }
+    })
+    const totalInfo = apiInfo.concat(arr)   
     return totalInfo    
 }
+
 
 //obtener por id
 const getIdVideogame = async (id) => {
@@ -92,15 +149,15 @@ const getGenre = async () => {
 
 router.get('/videogames', async (req, res) => {
     const  name  = req.query.name
-    let totalVideogames = await getAllVideogames()
-
+    let nameGa = await getNamedGames(name)
     if(name){
-        let videogames = await totalVideogames.filter(el => el.name.toLowerCase().includes(name.toLowerCase())) 
-        videogames.length ? 
-        res.status(200).send(videogames) : 
-        res.status(404).send('no se encuentra ningun vdeojuego con ese nombre')
+        let cosa = await nameGa.filter(v => v.name.toLowerCase().includes(name.toLowerCase()))
+        if (cosa.length >= 1) return res.status(200).send(cosa);
+            res.status(404).send('No existe el videojuego buscado, por favor revise el nombre');
     } else {
-        res.status(200).send(totalVideogames)
+        let totalVideogames = await getAllVideogames()
+        res.status(200).send(totalVideogames)  
+        
     }
 })
 
@@ -125,7 +182,7 @@ router.get('/genres', async (req, res) => {
     let genres = await getGenre()
     genres.map(el => {
         Genre.findOrCreate({
-            where: { name: el }
+            where: { nameGenre: el }
         })
     })
     const allGenres = await Genre.findAll()
@@ -134,26 +191,54 @@ router.get('/genres', async (req, res) => {
 
 
 
-router.post('/videogame', async (req, res) => {
-    let { name, image, description, releaseDate, genre, rating, platforms, urlImage } = req.body
+// router.post('/videogame', async (req, res) => {
+//     let { name, description, releaseDate, genre, rating, platforms } = req.body
     
-    let newGame = await Videogame.create({
+//     let newGame = await Videogame.create({
+//         name,
+//         description,
+//         releaseDate,
+//         rating,
+//         platforms,
+//         // image,
+//     })
+
+//     let genreDb = await Genre.findAll({
+//         where: { nameGenre: genre } 
+//     })
+
+//     newGame.addGenre(genreDb)
+//     res.status(200).send('creado con exito')
+
+// })
+
+router.post('/videogame', async (req, res) => {
+    let {
         name,
-        image,
         description,
         releaseDate,
         rating,
         platforms,
-        urlImage
-    })
+        genres,
+        image
 
-    let genreDb = await Genre.findAll({
-        where: { name: genre } 
-    })
+    } = req.body;
 
-    newGame.addGenre(genreDb)
-    res.status(200).send('creado con exito')
+    let createdVGame = await Videogame.create({
+        name,
+        description,
+        releaseDate,
+        rating,
+        platforms,
+        image
+    });
 
+
+
+    let genreDb = await Genre.findAll({ where: {nameGenre: genres } }); //name de tabla genre
+    createdVGame.addGenre(genreDb);
+    // console.log(createdVGame, 'genreeee',genreDb);
+    res.status(200).send('Videogame created successfully!');
 })
 
 module.exports = router;
