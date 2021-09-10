@@ -1,3 +1,5 @@
 export { default as CardVG } from './CardVG/CardVG'
 export { default as SearchBar } from './SearchBar/SearchBar'
 export { default as Paginado } from './Paginado/Paginado'
+export { default as Background } from './Background/Background'
+export { default as Title } from './Title/Title'

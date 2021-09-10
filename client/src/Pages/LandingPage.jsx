@@ -1,10 +1,19 @@
 import { Link } from 'react-router-dom'
+import { Background } from '../components'
+import { ContainerLanding, BtnStart } from './LandingPage.style'
+
+// const dispatch = useDispatch();
+//     useEffect(() => dispatch(getVideogames()), [dispatch])
+
 
 const LandingPage = () => {
     return (
         <>
-            <h2>Landing Page</h2> <br/>
-            <Link to='/home'>Ingresa Papu</Link>
+            <Background color='yellow' />
+            <ContainerLanding> 
+                <h1 translate='no'>GameZone</h1>
+                <Link translate='no' to='/home'><BtnStart>START GAME</BtnStart></Link> 
+            </ContainerLanding>
         </>
     )
 }

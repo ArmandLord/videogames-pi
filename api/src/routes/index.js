@@ -123,7 +123,8 @@ const getAllVideogames = async () => {
 const getIdVideogame = async (id) => {
     const apiURL = await axios.get(`https://api.rawg.io/api/games/${id}?key=${API_KEY}`)
     
-    let obj = {
+    try {
+        let obj = [{
         id: apiURL.data.id,
         name: apiURL.data.name,
         released: apiURL.data.released,
@@ -132,10 +133,14 @@ const getIdVideogame = async (id) => {
         description: apiURL.data.description,
         platforms: apiURL.data.platforms.map(el => el.platform.name),
         genres: apiURL.data.genres.map(el => el.name)
-    }
+    }]
     // console.log(obj);
     return obj
-}
+
+    } catch (error) {
+    return []
+    }
+}  
 
 //obtener los generos 
 const getGenre = async () => {
@@ -161,21 +166,64 @@ router.get('/videogames', async (req, res) => {
     }
 })
 
+const getGameById = async (id) => {
+
+    const apiSearch = await getId(id);
+
+    const dbInfo = await getDbInfo();
+
+    const auxArr = await dbInfo.map(el => {
+        return {
+            id: el.dataValues.id,
+            name: el.dataValues.name,
+            description: el.dataValues.description,
+            released: el.dataValues.released,
+            image: el.dataValues.image,
+            rating: el.dataValues.rating,
+            genres: el.dataValues.genres.map(el => el.nameGenre),           
+            platform: el.dataValues.platforms,
+            createdInDb: el.dataValues.createdInDb
+        }
+    })
+    const allInfo = apiSearch.concat(auxArr);
+    // console.log(allInfo);
+    return allInfo;
+}
+const getId = async (id) => {
+    try {
+        const apiUrl = await axios.get(`https://api.rawg.io/api/games/${id}?key=${API_KEY}`);
+    const apiInfo = [{
+        id: apiUrl.data.id,
+        name: apiUrl.data.name,
+        released: apiUrl.data.released,
+        description: apiUrl.data.description,
+        rating: apiUrl.data.rating,
+        image: apiUrl.data.background_image,
+        platforms: apiUrl.data.platforms.length === 0 ? 'No hay plataformas disponibles para este videojuego' : apiUrl.data.platforms.map(p => p.platform.name),
+        // genres: apiUrl.data.genres.map(v => v.name)
+        genres: apiUrl.data.genres.map(v => v.name)
+    }]
+    return apiInfo;
+    } catch (error) {
+        return []
+    }
+}
 
 router.get('/videogame/:id', async (req, res) => {
     const { id } = req.params
+      
+    
     try {
-        let videogameId = await getIdVideogame(id)
-        
-
-        if(id) {
-            res.status(200).send(videogameId)
-        } else {
-            res.status(404).send('no se encuentra ningun vdeojuego con ese nombre')
-        }
+        // const id = req.params.id;
+        // console.log(id);
+        const gameId = await getGameById(id);
+        // console.log('gameidddd',gameId);
+        let gameById =  gameId.filter(v => v.id == id)
+        if (gameById.length > 0) return res.status(200).send(gameById);
+        res.status(404).send('Videojuego no encontrado');
     } catch (error) {
-        res.status(404).send('no se encuentra ningun vdeojuego con ese nombre')
-    }    
+        res.status(404).send('Videojuego no encontrado');
+    }
 })
 
 router.get('/genres', async (req, res) => {

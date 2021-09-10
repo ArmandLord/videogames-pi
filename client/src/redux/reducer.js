@@ -3,13 +3,16 @@ import {
     FILTER_VIDEOGAMES_GENRE,
     FILTER_CREATED,
     FILTER_RATING,
-    FILTER_AS_DES
+    FILTER_AS_DES,
+    GET_BY_NAME,
+    GET_BY_ID
 } from './types'
 //aceptar la data y enviar a un estado 
 //Almacenr 👇🏻 la data inicial 
 const dataInitial = {
     videogames: [],
-    allVideogames: []
+    allVideogames: [],
+    videogameId: []
 }
 
 
@@ -72,6 +75,18 @@ export default function videogameReducer (state = dataInitial, {type, payload}) 
                 ...state,
                 videogames: sortedArr
             }
+        case GET_BY_NAME: 
+            // console.log(payload)
+            return {
+                ...state,
+                videogames: payload
+            }   
+        case GET_BY_ID: 
+            // console.log(payload)
+            return {
+                ...state,
+                videogameId: payload
+            }   
     
         default:
             return state

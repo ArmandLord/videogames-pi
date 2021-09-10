@@ -1,4 +1,4 @@
-import React from 'react'
+import { PaginadoS } from './Paginado.style'
 
 const Paginado = ({videogamesPerPage, allVideogames, paginado}) => {
     const pageNumbers = []
@@ -10,8 +10,8 @@ const Paginado = ({videogamesPerPage, allVideogames, paginado}) => {
     // console.log(pageNumbers);
 
     return (
-        <div style={{border: "2px solid red", height: "auto"}}>
-            <ul>
+        <>
+            <PaginadoS>
                 { pageNumbers &&
                     pageNumbers.map(number => { 
                         return (
@@ -21,8 +21,8 @@ const Paginado = ({videogamesPerPage, allVideogames, paginado}) => {
                         )
                     })
                 }        
-            </ul>
-        </div>
+            </PaginadoS>
+        </>
     )
 }
 

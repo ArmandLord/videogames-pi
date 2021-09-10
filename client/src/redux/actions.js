@@ -4,7 +4,9 @@ import {
     FILTER_VIDEOGAMES_GENRE,
     FILTER_CREATED,
     FILTER_RATING,
-    FILTER_AS_DES
+    FILTER_AS_DES,
+    GET_BY_NAME,
+    GET_BY_ID
  } from './types'
 //consumir api
 //acciones
@@ -49,3 +51,30 @@ export const filterAsDes = (payload) => (dispatch) => {
         payload
     })
 }
+export const getByName = (name) => async (dispatch) => {
+
+    try {
+        const res = await axios.get(`http://localhost:3001/videogames?name=${name}`)
+        // console.log(name);
+        return dispatch({
+            type: GET_BY_NAME,
+            payload: res.data
+        })
+    } catch (error) {
+        console.log(error);
+    }
+}
+export const getById = (id) => async (dispatch) => {
+
+    try {
+        const res = await axios.get(`http://localhost:3001/videogame/${id}`)
+        // console.log(res);
+        dispatch({
+            type: GET_BY_ID,
+            payload: res.data
+        })
+    } catch (error) {
+        console.log(error);
+    }
+}
+
