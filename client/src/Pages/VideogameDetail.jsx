@@ -10,7 +10,7 @@ import { Scroll } from './Home.style'
 const VideogameDetail = () => {
     const dispatch = useDispatch()
     const videogame = useSelector(store => store.videogameId)
-    // console.log('videogane',videogame[0]);
+    console.log('videogane',videogame[0]);
     let { id } = useParams()
     
     useEffect(() => {
@@ -31,11 +31,11 @@ const VideogameDetail = () => {
                 name={videogame[0].name}
                 image={videogame[0].image}
                 rating={videogame[0].rating}
-                released={videogame[0].released}
+                released={ videogame[0].released}
                 description={videogame[0].description?.replace(/<[^>]*>?/g, '')}
                 
                 genres={videogame[0].genres  ? videogame[0].genres.map((el, i) => <li key={i}>{el}</li>) : videogame[0].genres}
-                platforms={videogame[0].platforms  ? videogame[0].platforms.map((el, i) => <li key={i}>{el}</li>) : videogame[0].platforms}
+                platforms={typeof videogame[0].platforms !== 'string' ? videogame[0].platforms.map((el, i) => <li key={i}>{el}</li>) : <li>{videogame[0].platforms}</li> }
                 /> : <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
                 <img src='https://mir-s3-cdn-cf.behance.net/project_modules/disp/9c3be240991821.57aac5ea9fa15.gif' alt='mario'/>
                 <h2 style={{color: '#fff'}}>Loading...</h2>

@@ -4,6 +4,7 @@ import LandingPage from './Pages/LandingPage';
 import VideogameDetail from './Pages/VideogameDetail';
 import VideogameCreate from './Pages/VideogameCreate';
 import { GlobalStyle } from './GlobalStyles/GlobalStyles'
+import NotFound from './Pages/NotFound';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route exact path='/home' component={Home}  />
         <Route exact path='/videogame/create' component={VideogameCreate}  />
         <Route exact path='/videogame/:id' component={VideogameDetail}  />
+        <Route  path='*' component={NotFound}  />
       </Switch>
     </Router>
     </>

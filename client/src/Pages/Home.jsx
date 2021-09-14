@@ -63,6 +63,7 @@ const Home = () => {
         e.preventDefault()
         dispatch(getByName(nameF.toLocaleLowerCase()))
         // console.log(nameF);
+        setCurrentPage(1)
         setNameF('')
     }
      return (

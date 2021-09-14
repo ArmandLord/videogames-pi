@@ -5,14 +5,17 @@ import {
     FILTER_RATING,
     FILTER_AS_DES,
     GET_BY_NAME,
-    GET_BY_ID
+    GET_BY_ID,
+    GET_BY_GENRES,
+    // POST 
 } from './types'
 //aceptar la data y enviar a un estado 
 //Almacenr 👇🏻 la data inicial 
 const dataInitial = {
     videogames: [],
     allVideogames: [],
-    videogameId: []
+    videogameId: [],
+    genres: []
 }
 
 
@@ -62,12 +65,12 @@ export default function videogameReducer (state = dataInitial, {type, payload}) 
         case FILTER_AS_DES: 
             // console.log(payload);
             const sortedArr = payload === 'Asc' ? state.videogames.sort((prev, next) => {
-                if(prev.name > next.name) return 1
-                if(prev.name < next.name) return -1
+                if(prev.name.toLocaleLowerCase() > next.name.toLocaleLowerCase()) return 1
+                if(prev.name.toLocaleLowerCase() < next.name.toLocaleLowerCase()) return -1
                 return 0
             }) : state.videogames.sort((prev, next) => {
-                if(prev.name > next.name) return -1
-                if(prev.name < next.name) return 1
+                if(prev.name.toLocaleLowerCase() > next.name.toLocaleLowerCase()) return -1
+                if(prev.name.toLocaleLowerCase() < next.name.toLocaleLowerCase()) return 1
                 return 0
             })
             // console.log(sortedArr);
@@ -86,6 +89,12 @@ export default function videogameReducer (state = dataInitial, {type, payload}) 
             return {
                 ...state,
                 videogameId: payload
+            }   
+        case GET_BY_GENRES: 
+            // console.log(payload)
+            return {
+                ...state,
+                genres: payload
             }   
     
         default:

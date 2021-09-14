@@ -56,6 +56,31 @@ const getDbInfo = async () => {
     })
 }
 
+
+//Concatenar ambos data all de api y db 
+const getAllVideogames = async () => {
+    const apiInfo = await getApiInfo()
+    const dbInfo = await getDbInfo()
+    //hacer el map 👆🏻
+    // console.log(dbInfo[11].dataValues);
+    const arr = await dbInfo.map(el => {
+        return {
+            id: el.dataValues.id,
+            name: el.dataValues.name,
+            description: el.dataValues.description,
+            releaseDate: el.dataValues.releaseDate,
+            rating: el.dataValues.rating,
+            platforms: el.dataValues.platforms,
+            image: el.dataValues.image,
+            genres: el.dataValues.genres.map(el => el.nameGenre),
+            createdInDb: el.dataValues.createdInDb
+        }
+    })
+    const totalInfo = apiInfo.concat(arr)   
+    return totalInfo    
+}
+
+//Aquí la data de la Api por nombre
 const getVgNameApi = async (game) => {
     const apiUrlName = await axios.get(`https://api.rawg.io/api/games?search=${game}&key=${API_KEY}`)    
     let vName = await apiUrlName.data.results.map(el => { 
@@ -72,6 +97,7 @@ const getVgNameApi = async (game) => {
     })
     return vName.slice(0, 15) //solo 15
 }
+//aqui juntamos la data por name de api y db
 const getNamedGames = async (name) => {
     const apiSearch = await getVgNameApi(name);
     const dbInfo = await getDbInfo();
@@ -95,100 +121,7 @@ const getNamedGames = async (name) => {
 }
 
 
-//Concatenar ambos // el bueno
-const getAllVideogames = async () => {
-    const apiInfo = await getApiInfo()
-    const dbInfo = await getDbInfo()
-    //hacer el map 👆🏻
-    // console.log(dbInfo[0].dataValues);
-    const arr = await dbInfo.map(el => {
-        return {
-            id: el.dataValues.id,
-            name: el.dataValues.name,
-            description: el.dataValues.description,
-            releaseDate: el.dataValues.releaseDate,
-            rating: el.dataValues.rating,
-            platforms: el.dataValues.platforms,
-            image: el.dataValues.image,
-            genres: el.dataValues.genres.map(el => el.nameGenre),
-            createdInDb: el.dataValues.createdInDb
-        }
-    })
-    const totalInfo = apiInfo.concat(arr)   
-    return totalInfo    
-}
-
-
-//obtener por id
-const getIdVideogame = async (id) => {
-    const apiURL = await axios.get(`https://api.rawg.io/api/games/${id}?key=${API_KEY}`)
-    
-    try {
-        let obj = [{
-        id: apiURL.data.id,
-        name: apiURL.data.name,
-        released: apiURL.data.released,
-        image: apiURL.data.background_image,
-        rating: apiURL.data.rating,
-        description: apiURL.data.description,
-        platforms: apiURL.data.platforms.map(el => el.platform.name),
-        genres: apiURL.data.genres.map(el => el.name)
-    }]
-    // console.log(obj);
-    return obj
-
-    } catch (error) {
-    return []
-    }
-}  
-
-//obtener los generos 
-const getGenre = async () => {
-    const apiURL = await axios.get(`https://api.rawg.io/api/genres?key=${API_KEY}`)
-    const genres = await apiURL.data.results.map(el => el.name)
-    return genres
-}
-
-//Crear la ruta: en esta parte podemos unificar las dos GET
-//simplemente destructurando qery
-
-router.get('/videogames', async (req, res) => {
-    const  name  = req.query.name
-    let nameGa = await getNamedGames(name)
-    if(name){
-        let cosa = await nameGa.filter(v => v.name.toLowerCase().includes(name.toLowerCase()))
-        if (cosa.length >= 1) return res.status(200).send(cosa);
-            res.status(404).send('No existe el videojuego buscado, por favor revise el nombre');
-    } else {
-        let totalVideogames = await getAllVideogames()
-        res.status(200).send(totalVideogames)  
-        
-    }
-})
-
-const getGameById = async (id) => {
-
-    const apiSearch = await getId(id);
-
-    const dbInfo = await getDbInfo();
-
-    const auxArr = await dbInfo.map(el => {
-        return {
-            id: el.dataValues.id,
-            name: el.dataValues.name,
-            description: el.dataValues.description,
-            released: el.dataValues.released,
-            image: el.dataValues.image,
-            rating: el.dataValues.rating,
-            genres: el.dataValues.genres.map(el => el.nameGenre),           
-            platform: el.dataValues.platforms,
-            createdInDb: el.dataValues.createdInDb
-        }
-    })
-    const allInfo = apiSearch.concat(auxArr);
-    // console.log(allInfo);
-    return allInfo;
-}
+//data por id de api
 const getId = async (id) => {
     try {
         const apiUrl = await axios.get(`https://api.rawg.io/api/games/${id}?key=${API_KEY}`);
@@ -207,7 +140,57 @@ const getId = async (id) => {
     } catch (error) {
         return []
     }
+} 
+//Concatenamos por id api y db
+const getGameById = async (id) => {
+
+    const apiSearch = await getId(id);
+
+    const dbInfo = await getDbInfo();
+
+    const auxArr = await dbInfo.map(el => {
+        return {
+            id: el.dataValues.id,
+            name: el.dataValues.name,
+            description: el.dataValues.description,
+            released: el.dataValues.releaseDate,
+            image: el.dataValues.image,
+            rating: el.dataValues.rating,
+            genres: el.dataValues.genres.map(el => el.nameGenre),           
+            platforms: el.dataValues.platforms,
+            createdInDb: el.dataValues.createdInDb
+        }
+    })
+    // console.log(auxArr);
+    const allInfo = apiSearch.concat(auxArr);
+    return allInfo;
 }
+ 
+//obtener data de api por generos 
+const getGenre = async () => {
+    const apiURL = await axios.get(`https://api.rawg.io/api/genres?key=${API_KEY}`)
+    const genres = await apiURL.data.results.map(el => el.name)
+    return genres
+}
+
+
+//RUTAS 🚦
+//Crear la ruta: en esta parte podemos unificar las dos GET
+//simplemente destructurando qery
+
+router.get('/videogames', async (req, res) => {
+    const  name  = req.query.name
+    let nameGa = await getNamedGames(name)
+    if(name){
+        let cosa = await nameGa.filter(v => v.name.toLowerCase().includes(name.toLowerCase()))
+        if (cosa.length >= 1) return res.status(200).send(cosa);
+            res.status(404).send('No existe el videojuego buscado, por favor revise el nombre');
+    } else {
+        let totalVideogames = await getAllVideogames()
+        res.status(200).send(totalVideogames)  
+        
+    }
+})
 
 router.get('/videogame/:id', async (req, res) => {
     const { id } = req.params
@@ -236,29 +219,6 @@ router.get('/genres', async (req, res) => {
     const allGenres = await Genre.findAll()
     res.send(allGenres)
 })
-
-
-
-// router.post('/videogame', async (req, res) => {
-//     let { name, description, releaseDate, genre, rating, platforms } = req.body
-    
-//     let newGame = await Videogame.create({
-//         name,
-//         description,
-//         releaseDate,
-//         rating,
-//         platforms,
-//         // image,
-//     })
-
-//     let genreDb = await Genre.findAll({
-//         where: { nameGenre: genre } 
-//     })
-
-//     newGame.addGenre(genreDb)
-//     res.status(200).send('creado con exito')
-
-// })
 
 router.post('/videogame', async (req, res) => {
     let {

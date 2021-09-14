@@ -6,7 +6,9 @@ import {
     FILTER_RATING,
     FILTER_AS_DES,
     GET_BY_NAME,
-    GET_BY_ID
+    GET_BY_ID,
+    GET_BY_GENRES,
+    // POST
  } from './types'
 //consumir api
 //acciones
@@ -77,4 +79,29 @@ export const getById = (id) => async (dispatch) => {
         console.log(error);
     }
 }
+export const getGenres = () => async (dispatch) => {
+
+    try {
+        const res = await axios.get(`http://localhost:3001/genres`)
+        // console.log(res);
+        dispatch({
+            type: GET_BY_GENRES,
+            payload: res.data
+        })
+    } catch (error) {
+        console.log(error);
+    }
+}
+export const postVideogame = (game) => async (dispatch) => {
+// console.log(game);
+    try {
+        const res = await axios.post(`http://localhost:3001/videogame`, game)
+        // console.log(res);
+        return res
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+
 
